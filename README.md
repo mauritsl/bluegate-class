@@ -2,8 +2,9 @@ BlueGate Class
 ==================
 
 [![Build Status](https://travis-ci.org/mauritsl/bluegate-class.svg?branch=master)](https://travis-ci.org/mauritsl/bluegate-class)
-[![Coverage Status](https://coveralls.io/repos/mauritsl/bluegate-class/badge.svg?branch=master)](https://coveralls.io/r/mauritsl/bluegate-class?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/mauritsl/bluegate-class/badge.svg?branch=master)](https://coveralls.io/github/mauritsl/bluegate-class?branch=master)
 [![Dependency Status](https://david-dm.org/mauritsl/bluegate-class.svg)](https://david-dm.org/mauritsl/bluegate)
+[![Known Vulnerabilities](https://snyk.io/test/github/mauritsl/bluegate-class/badge.svg)](https://snyk.io/test/github/mauritsl/bluegate-class)
 
 Use ES6 classes to write routes.
 Route classes are using annotations to integrate routes in the application.
