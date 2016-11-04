@@ -1,11 +1,6 @@
 /* eslint-env node, mocha */
 "use strict";
 
-// Run Redis before running test:
-// docker run --name testredis -d -p 6379:6379 redis
-// And clean up after test:
-// docker stop testredis && docker rm testredis
-
 var Promise = require('bluebird');
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
