@@ -115,6 +115,8 @@ app.postprocess(function(template) {
 Add a Query annotation to register GET-parameters as function parameters in the callbacks.
 You must specify a type. Usual types are "string", "int" and "bool". A list of available types
 is available in the [BlueGate](https://www.npmjs.com/package/bluegate) readme.
+All types are supported, but ``string`` is handled as ``path``, because strings are confusing
+when not used in paths, as they cannot contain slashes.
 
 ```javascript
 /**
@@ -146,6 +148,10 @@ class UsersListRoute {
 
 ### Post
 
+Post annotations can register post data as parameters.
+Provide a name and type to extract a single field, or omit the name to
+get the full post data.
+
 ```javascript
 /**
  * @Route("GET /test")
@@ -159,7 +165,11 @@ class TestRoute {
 }
 ```
 
+You may provide an alias option, similar to the Query annotation.
+
 ### Cookie
+
+The Cookie annotations accepts the same options as the Query annotation.
 
 ```javascript
 /**
@@ -175,6 +185,10 @@ class TestRoute {
 
 ### Header
 
+Use the Header annotation to get information from HTTP-headers.
+This annotation does not support type conversions.
+``alias`` is the only accepted option.
+
 ```javascript
 /**
  * @Route("GET /test")
@@ -188,6 +202,9 @@ class TestRoute {
 ```
 
 ### Content Type
+
+The ContentType annotation can be used to set a fixed mimetype for this route.
+Note that BlueGate automatically sets the mimetype for HTML and JSON responses.
 
 ```javascript
 /**
