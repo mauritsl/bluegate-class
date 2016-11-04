@@ -21,7 +21,7 @@ require('bluegate-class')(app, {
 ```
 
 Add a route in ``routes/homepage.js``:
-```
+```javascript
 /**
  * @Route("GET /")
  */
@@ -33,7 +33,7 @@ module.exports = class FrontpageRoute {
 ```
 
 More complex route:
-```
+```javascript
 /**
  * @Route("GET /page/<id:int>")
  * @Query("json", type="bool", alias="respondInJson")
@@ -80,7 +80,7 @@ Using a Route annotation is mandatory.
 More information about the formatting of routes can be found in the
 [BlueGate](https://www.npmjs.com/package/bluegate) readme.
 
-```
+```javascript
 /**
  * @Route("GET /user/<name:string>")
  */
@@ -92,7 +92,7 @@ callbacks as function parameters. Parameters registered in annotations are avail
 all callbacks, including callbacks outside this class.
 A common use-case for this is to specify a page template.
 
-```
+```javascript
 /**
  * @Route("GET /user", template="userPage")
  */
@@ -103,7 +103,7 @@ class UserProfileRoute {
 }
 ```
 
-```
+```javascript
 app.postprocess(function(template) {
   return templateFunctions[template](this.output);
 });
@@ -116,7 +116,7 @@ Add a Query annotation to register GET-parameters as function parameters in the 
 You must specify a type. Usual types are "string", "int" and "bool". A list of available types
 is available in the [BlueGate](https://www.npmjs.com/package/bluegate) readme.
 
-```
+```javascript
 /**
  * @Route("GET /user")
  * @Query("name", type="string")
@@ -132,7 +132,7 @@ The default value is used when the input does not match the provided type.
 A default value can be provided using the ``default`` parameter (and defaults to ``null``).
 You may also specify an alias. This is the name used for the function parameter.
 
-```
+```javascript
 /**
  * @Route("GET /users")
  * @Query("page", type="int", alias="pageNumber", default=1)
@@ -146,7 +146,7 @@ class UsersListRoute {
 
 ### Post
 
-```
+```javascript
 /**
  * @Route("GET /test")
  * @Post("name", type="string")
@@ -161,7 +161,7 @@ class TestRoute {
 
 ### Cookie
 
-```
+```javascript
 /**
  * @Route("GET /test")
  * @Cookie("sessionId", type="string")
@@ -175,7 +175,7 @@ class TestRoute {
 
 ### Header
 
-```
+```javascript
 /**
  * @Route("GET /test")
  * @Header("User-Agent", alias="userAgent")
@@ -189,7 +189,7 @@ class TestRoute {
 
 ### Content Type
 
-```
+```javascript
 /**
  * @Route("GET /test")
  * @ContentType("application/pdf")
@@ -206,7 +206,7 @@ class TestRoute {
 The BlueGate request object is passed to the class constructor as the ``request`` parameter.
 You have to save a reference to it in order to access it in the ``process`` function.
 
-```
+```javascript
 /**
  * @Route("GET /test")
  */
@@ -227,7 +227,7 @@ class TestRoute {
 It is possible to pass extra parameters to the route constructors. They can hold references
 to your database client, for example.
 
-```
+```javascript
 require('bluegate-class')(app, {
   files: __dirname + '/routes/**.js',
   parameters: {
@@ -236,7 +236,7 @@ require('bluegate-class')(app, {
 });
 ```
 
-```
+```javascript
 /**
  * @Route("GET /test")
  */
