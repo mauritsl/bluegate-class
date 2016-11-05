@@ -1,30 +1,20 @@
 "use strict";
 
-var path = require('path');
+const path = require('path');
 
-var _ = require('lodash');
-var globby = require('globby');
-var Annotations = require('ecmas-annotations');
-
-var registry = new Annotations.Registry();
-registry.registerAnnotation(path.join(__dirname, '/annotations/route.js'));
-registry.registerAnnotation(path.join(__dirname, '/annotations/content-type.js'));
-registry.registerAnnotation(path.join(__dirname, '/annotations/query.js'));
-registry.registerAnnotation(path.join(__dirname, '/annotations/header.js'));
-registry.registerAnnotation(path.join(__dirname, '/annotations/cookie.js'));
-registry.registerAnnotation(path.join(__dirname, '/annotations/post.js'));
-
-var reader = new Annotations.Reader(registry);
+const _ = require('lodash');
+const globby = require('globby');
+const Annotations = require('ecmas-annotations');
 
 // Get parameters for function.
-var getParameters = function(fn) {
+const getParameters = function(fn) {
   var code = fn.toString();
   var params = code.match(/^[a-z0-9]+[\s]*\(([^)]*)\)/im)[1].split(',').map(str => str.trim());
   return params[0] === '' ? [] : params;
 };
 
 // List of stages in BlueGate request flow.
-var stages = [
+const stages = [
   'initialize',
   'authentication',
   'authorisation',
@@ -38,25 +28,46 @@ var stages = [
   'aftererror'
 ];
 
-module.exports = function(app, options) {
-  options = _.defaults(options, {
-    files: path.join(process.cwd(), 'routes/**.js'),
-    parameters: {}
+// Register annotations in the application.
+const addAnnotations = app => {
+  if (typeof app._class_annotations === 'undefined') {
+    app._class_annotations = [];
+  }
+  const pattern = [
+    path.join(__dirname, '/annotations/*.js'),
+    '!' + path.join(__dirname, '/annotations/base.js')
+  ];
+  globby.sync(pattern).forEach(file => {
+    app._class_annotations.push(file);
   });
+};
+
+// Initialize Reader class to read annotations.
+const createAnnotationReader = app => {
+  var registry = new Annotations.Registry();
+  app._class_annotations.forEach(file => {
+    registry.registerAnnotation(file);
+  });
+  return new Annotations.Reader(registry);
+};
+
+const processAnnotations = (app, options) => {
+  // Initialize the annotation reader.
+  let reader = createAnnotationReader(app);
 
   // Loop though all route files.
   globby.sync(options.files).forEach(file => {
-    var path;
-    var routeClass = require(file);
+    let path;
+    let routeClass = require(file);
 
     // Parse class annotations.
     reader.parse(file, Annotations.Reader.ES6);
 
     // Sort annotations in routes and other annotations.
-    var routes = [];
-    var annotations = [];
+    let routes = [];
+    let annotations = [];
     reader.definitionAnnotations.forEach(annotation => {
-      var info = {
+      let info = {
         type: annotation.constructor.name,
         value: annotation.value,
         options: _.omit(annotation, ['value', 'className', 'filePath', 'directoryPath', 'target']),
@@ -80,7 +91,7 @@ module.exports = function(app, options) {
           _class_instances = {};
           this.setParameter('_class_instances', _class_instances);
         }
-        var routeInstance = new routeClass(this, options.parameters);
+        const routeInstance = new routeClass(this, options.parameters);
         _class_instances[file] = routeInstance;
       });
 
@@ -99,7 +110,7 @@ module.exports = function(app, options) {
           originalArgs = originalArgs.join(',');
           args = args.join(',');
           let fn;
-          var code = 'fn = function(' + args + '){ return _class_instances[' + JSON.stringify(file) + '].' + stage + '(' + originalArgs + '); }';
+          const code = 'fn = function(' + args + '){ return _class_instances[' + JSON.stringify(file) + '].' + stage + '(' + originalArgs + '); }';
           eval(code);
           app[stage](path, fn);
         }
@@ -107,12 +118,33 @@ module.exports = function(app, options) {
 
       // Register callbacks for other annotations.
       annotations.forEach(annotation => {
-        var callbacks = annotation.instance.getCallbacks(routeClass);
-        for (var key in callbacks) {
+        const callbacks = annotation.instance.getCallbacks(routeClass);
+        for (let key in callbacks) {
           app[key](path, callbacks[key]);
         }
-      })
+      });
 
     });
   });
 };
+
+// Main function for this module.
+const classModule = (app, options) => {
+  options = _.defaults(options, {
+    files: path.join(process.cwd(), 'routes/**.js'),
+    parameters: {}
+  });
+
+  // Add annotations provided by this module.
+  addAnnotations(app);
+
+  // Delay the processing of annotations, to allow other modules to register their own annotations.
+  setImmediate(() => {
+    processAnnotations(app, options);
+  });
+};
+
+// Add the AnnotationBase class to the exports.
+classModule.AnnotationBase = require(path.join(__dirname, 'annotations/base'));
+
+module.exports = classModule;
